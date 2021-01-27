@@ -4,7 +4,7 @@
 Components to the ball-based router system must be in component structure specific to vanille.js
 
 ```js
-import { Router } from "./router/router.js"
+import { Router } from "./vanille/router/router.js"
 import Home from "./pages/home.js"
 
 const routers = [

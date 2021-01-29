@@ -9,7 +9,7 @@ import Home from "./pages/home.js"
 
 const routers = [
     {
-        path: "/",
+        hash: "#home",
         component: Home
     }
 ]
@@ -20,6 +20,6 @@ new Router({ rootName: "#router", routers })
 ### v-link
 ```html
 <body>
-    <v-link path="/"> Go Home </v-link>
+    <v-link hash="#home"> Go Home </v-link>
 </body>
 ```

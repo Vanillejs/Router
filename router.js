@@ -2,7 +2,7 @@ import { Component } from "../system/component.js"
 import Settings from "../../settings.js"
 
 export class Router {
-    constructor({ linkChanged, routerMode = "path", rootName = "body", routers = [], defaultComponent }) {
+    constructor({ name, linkChanged, routerMode = "path", rootName = "body", routers = [], defaultComponent, $mounted = () => {}, $created = () => {} }) {
         this.root = document.querySelector(rootName)
         this.rootName = rootName
         this.routers = routers
@@ -12,20 +12,20 @@ export class Router {
         this.routerMode = routerMode
         this.linkChanged = linkChanged
         this.title = ""
-        this.name = ""
+        this.name = name
+        this.$created = $created
+        this.$mounted = $mounted
 
-        this.createRouterObject()
+        this.updateRouterObject()
         this.routeManager()
-        this.eventHandler()
+        $created()
     }
 
-    createRouterObject() {
-        window.verb.$router = {
-            ...this
-        }
-    }
+    updateRouterObject() {
+        if (window.$routers === undefined) window.$routers = {}
 
-    updateRouterObject = () => window.verb.$router = Object.assign(window.verb.$router, this)
+        window.$routers[this.name] = this
+    }
 
     setLink(to) {
         if (this.linkChanged) {
@@ -35,6 +35,14 @@ export class Router {
                 location.hash = to
             }
         }
+
+        this.routeManager()
+    }
+
+    canterChange(to) {
+        this[this.routerMode] = to
+
+        this.routeManager()
     }
 
     eventHandler() {
@@ -42,11 +50,11 @@ export class Router {
             element.addEventListener("click", () => {
                 const to = element.getAttribute("to")
 
-                this[this.routerMode] = to
-
-                this.setLink(to)
-
-                this.routeManager()
+                if (to !== this[this.routerMode]) {
+                    this[this.routerMode] = to
+                    
+                    this.setLink(to)
+                }
             })
         })
     }
@@ -59,26 +67,26 @@ export class Router {
                 { component, title, name } = this.routers[i]
 
             if (req === this[this.routerMode]) {
-                this.root.innerHTML = ""
-
-                new Component(component).$render(this.rootName, {}, {}, true)
-
+                new Component(component).$render(this.rootName, {}, {}, true).then(() => {
+                    this.eventHandler()
+                    this.$mounted(this)
+                })
                 this.title = title
-                title !== undefined ? document.title = this.title : null
-                this.name = name !== undefined ? name : ""
+                if (title !== undefined) document.title = this.title
+
                 defaultMode = false
+
                 this.updateRouterObject()
 
                 break
-            } else {
-                defaultMode = true
-            }
+            } else defaultMode = true
         }
 
         if (defaultMode) {
-            this.root.innerHTML = ""
-
-            new Component(this.defaultComponent).$render(this.rootName, {}, {}, true)
+            new Component(this.defaultComponent).$render(this.rootName, {}, {}, true).then(() => {
+                this.eventHandler()
+                this.$mounted(this)
+            })
         }
     }
 }

@@ -1,5 +1,5 @@
-import { Component } from "../system/component.js"
-import Settings from "../../settings.js"
+import { Component } from "../../../distribution.js"
+import { Settings } from "../../../distribution.js"
 
 export class Router {
     constructor({ name, linkChanged, routerMode = "path", rootName = "body", routers = [], defaultComponent, $mounted = () => {}, $created = () => {} }) {
